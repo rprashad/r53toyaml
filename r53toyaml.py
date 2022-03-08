@@ -45,7 +45,6 @@ class R53toyaml(object):
 
         raw_records = {}
         records = {}
-        results = {}
         for name, host_id in zones.items():
             raw_records[name] = self.fetch_results(command='list_resource_record_sets', HostedZoneId=host_id)
 
@@ -59,7 +58,7 @@ class R53toyaml(object):
                     if (name == s['Name'].rstrip('.')):
                         rname = "@"
                     else:
-                        rname= '.'.join(s['Name'].split(".")[:-2])
+                        rname= '.'.join(s['Name'].split(".")[:-3])
                     alias = True if "AliasTarget" in s else False
                     rtype = s['Type'].lower() if not alias else "cname"
                     rtype = "txt" if s['Type'] == 'SPF' else rtype
@@ -67,7 +66,7 @@ class R53toyaml(object):
                     rr    = self._get_resource_values(s['ResourceRecords'], rtype) if not alias else s["AliasTarget"]["DNSName"]
                     rr = [rr] if type(rr) == str else rr
                     data = {}
-                    if len(rr) == 1 and (rtype != "a" or rtype != "mx" or rtype != "txt"):
+                    if (rtype == "cname"):
                         data = {'ttl': ttl, 'record': rr[0]}
                     else:
                         data = {'ttl': ttl, 'records': rr}
@@ -77,15 +76,6 @@ class R53toyaml(object):
                             records[name]['records'][rtype].update({rname : data})
 
         return { 'public' : records }
-        #results = {}
-        #for domain, rtype in records.items():
-        #    for k,v in rtype.items():
-        #        if len(v) != 0:
-        #            if domain not in results:
-        #                results.update({domain : {}})
-        #            results[domain].update({k : v})
-        #return { 'public' : results }
-
 
 client = boto3.client('route53')
 r2y = R53toyaml(client)
