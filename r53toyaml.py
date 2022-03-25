@@ -38,6 +38,13 @@ class R53toyaml(object):
                         v = v[0].split(" ")
                     mx.append({ 'preference' : v[0], 'exchange' : v[1] })
             return mx
+        elif rtype == "txt":
+            txt = []
+            for x in rvalues:
+                for k,v in x.items():
+                    v = " ".join(v.split("\n"))
+                    txt.append(v)
+            return txt
         else:
             return [ v for x in rvalues for k,v in x.items() ]
 
